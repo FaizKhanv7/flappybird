@@ -8,10 +8,29 @@
 
     <body>
         <div id="game">
-            <div><h1 id="textDisplay"></h1></div>
-            <div id="block"></div>
-            <div id="hole"></div>
-            <div id="character"></div>
+
+            <div id="start-screen" class="screen">
+                <h1>Cursed Flappy Bird</h1>
+                <p>Control the pipes. Don't let the bird crash.</p>
+                <button class="tip">PRESS SPACE TO START</button>
+            </div>
+
+            <div id="game-screen" class="screen display-none">
+                <div><h1 id="textDisplay">Score: 0</h1></div>
+                <div id="obstacle-container">
+                    <div id="block"></div>
+                    <div id="hole"></div>
+                </div>
+                <div id="character"></div>
+            </div>
+
+            <div id="gameover-screen" class="screen display-none">
+                <h1>GAME OVER</h1>
+                <div id="final-score">Final Score: 0</div>
+                <div id="high-score">High Score: 0</div>
+                <button class="tip">PRESS SPACE TO TRY AGAIN</button>
+            </div>
+
         </div>
     </body>
     <script src="script.js"></script>
