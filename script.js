@@ -18,11 +18,45 @@ let isGameOver = false;
 let score = 0;
 let speed = 2;
 let gravity = 4;
+let currentPowerUp = "none";
+const powerUps = ["SlowMo", "NoGravity"];
+let isPowerUpActive = false;
 let highScore = localStorage.getItem("cursedFlappyHighScore") || 0;
 let currentActiveScreen = "start";
+let noGravityActive = false;
+let noGravityHoleTop = 0;
+let currentRotation = 0;
+let isRotatedDown = true;
+let isRotatedUp = false;
+
+
+function getCenteredHoleTop() {
+    const characterTop = parseInt(window.getComputedStyle(character).top) || 0;
+    const characterHeight = character.offsetHeight;
+    const holeHeight = hole.offsetHeight;
+    return characterTop + (characterHeight / 2) - (holeHeight / 2);
+}
+
+function setPipeSpeedMultiplier(multiplier) {
+    const anim = obstacleContainer.getAnimations()[0];
+    if (anim) anim.playbackRate = multiplier;
+}
+
+function baseSpeedMultiplierFromScore(s) {
+    constEffectiveDuration = Math.max(0.6, 2 - (s * 0.05));
+}
+
+function rotateImage(rotateAmount) {
+    currentRotation += rotateAmount;
+
+    const img = document.getElementById("character");
+
+    img.style.transform = `rotate(${currentRotation}deg)`;
+}
 
 obstacleContainer.addEventListener('animationiteration', () => {
     if (!isGameOver) {
+
         // set hole in random position
         var random = -(Math.random()*350);
         hole.style.top = random + "px";
@@ -31,13 +65,42 @@ obstacleContainer.addEventListener('animationiteration', () => {
         score ++;
         textDisplay.innerHTML = "Score: " + score;
 
+        // trigger random powerup every 5
+        if ((score % 5) === 0 && !isPowerUpActive) {
+            currentPowerUp = powerUps[Math.floor(Math.random() * powerUps.length)];
+            textDisplay2.innerHTML = "PowerUp: " + currentPowerUp;
+
+            if (currentPowerUp === "SlowMo") {
+                isPowerUpActive = true;
+                setPipeSpeedMultiplier(0.4);
+                setTimeout(() => {
+                    isPowerUpActive = false;
+                    currentPowerUp = "none";
+                    textDisplay2.innerHTML = "PowerUp: None";
+                    setPipeSpeedMultiplier(baseSpeedMultiplierFromScore(score));
+                }, 4000);
+            } else if (currentPowerUp === "NoGravity") {
+                isPowerUpActive = true;
+                noGravityActive = true;
+                noGravityHoleTop = getCenteredHoleTop();
+                hole.style.top = noGravityHoleTop + "px";
+
+                setTimeout(() => {
+                    isPowerUpActive = false;
+                    noGravityActive = false;
+                    currentPowerUp = "none";
+                    textDisplay2.innerHTML = "PowerUp: None";
+                }, 4000);
+            }
+        }
+
         // increase speed
-        speed = Math.max(0.6, 2 - (score * 0.05));
-        obstacleContainer.style.animationDuration = speed + "s";
-        textDisplay2.innerHTML = "Speed: " + speed;
+        if (!isPowerUpActive) {
+            setPipeSpeedMultiplier(baseSpeedMultiplierFromScore(score));
+        }
 
         // increase gravity slightly
-        gravity = Math.min(gravity + 0.07);
+        gravity = Math.min(8, gravity + 0.07);
     }
 });
 
@@ -75,8 +138,15 @@ function triggerShake() {
     }, 300);
 }
 
-function resetGameValues() { 
+function resetGameValues() {
+    const img = document.getElementById("character"); 
+    currentRotation = 0;
+    img.style.transform = 'rotate(0deg)';
     score = 0;
+    textDisplay.innerHTML = "Score: " + score;
+    isPowerUpActive = false;
+    currentPowerUp = "none";
+    textDisplay2.innerHTML = "PowerUp: None";
     speed = 2;
     gravity = 4;
     isGameOver = false;
@@ -84,6 +154,7 @@ function resetGameValues() {
     obstacleContainer.style.animation = 'none';
     obstacleContainer.offsetHeight;
     obstacleContainer.style.animation = 'moveObstacle 2s infinite linear';
+    setPipeSpeedMultiplier(1);
 }
 
 setInterval(function(){
@@ -92,9 +163,16 @@ setInterval(function(){
         var holeTop = parseInt(window.getComputedStyle(hole).getPropertyValue("top"));
         var blockLeft = parseInt(window.getComputedStyle(obstacleContainer).getPropertyValue("left"));
 
-        if (jumping === 0) {
+        if (noGravityActive) {
+            hole.style.top = noGravityHoleTop + "px";
+        } else if (jumping === 0) {
             if (holeTop < 350) {
                 hole.style.top = (holeTop+gravity)+"px";
+                if (!isRotatedDown) {
+                    isRotatedDown = true;
+                    isRotatedUp = false;
+                    rotateImage(90);
+                }
             }
         }
 
@@ -112,6 +190,7 @@ setInterval(function(){
 }, 10);
 
 function jump() {
+    if (noGravityActive) return;
     jumping = 1;
     let jumpCount = 0;
     var jumpInterval = setInterval(() => {
@@ -133,6 +212,11 @@ document.addEventListener('keydown', (event) => {
     if (event.key === ' ') {
         if (!isGameOver && currentActiveScreen !== "start") {
             jump();
+            if (!isRotatedUp) {
+                isRotatedDown = false;
+                isRotatedUp = true;
+                rotateImage(-90);
+            }
         } else {
             if (currentActiveScreen === "start") {
                 changeScreen("game");

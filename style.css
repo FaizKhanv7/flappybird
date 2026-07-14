@@ -133,4 +133,5 @@ h1{
     top: 235;
     left: 40px;
     border-radius: 50%;
+    transition: transform 0.3s ease;
 }
