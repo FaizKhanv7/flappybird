@@ -4,6 +4,24 @@
     box-sizing: border-box;
 }
 
+@keyframes screen-shake {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    10% { transform: translate(-5px, -5px) rotate(-1deg); }
+    20% { transform: translate(5px, 5px) rotate(1deg); }
+    30% { transform: translate(-5px, 5px) rotate(-1deg); }
+    40% { transform: translate(5px, -5px) rotate(1deg); }
+    50% { transform: translate(-5px, -5px) rotate(-1deg); }
+    60% { transform: translate(5px, 5px) rotate(0deg); }
+    70% { transform: translate(-5px, 5px) rotate(1deg); }
+    80% { transform: translate(5px, -5px) rotate(-1deg); }
+    90% { transform: translate(-5px, -5px) rotate(1deg); }
+    100% { transform: translate(0, 0) rotate(0deg); }   
+}
+
+.shake-active {
+    animation: screen-shake 0.3s ease-in-out;
+}
+
 .screen {
     position: absolute;
     width: 100%;
@@ -23,6 +41,12 @@
 
 .tip {
     margin-top: 20px;
+    border-radius: 8px;
+    padding: 10px 10px;
+    background-color: black;
+    border: none;
+    box-shadow: none;
+    color: #97e9f9;
 }
 
 #start-screen, #gameover-screen {
@@ -39,6 +63,16 @@ h1{
 #textDisplay {
     position: absolute;
     top: 20px;
+    left: 20px;
+    font-size: 20px;
+    font-weight: bold;
+    color: black;
+    z-index: 5;
+}
+
+#textDisplay2 {
+    position: absolute;
+    top: 40px;
     left: 20px;
     font-size: 20px;
     font-weight: bold;

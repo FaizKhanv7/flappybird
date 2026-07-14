@@ -2,6 +2,7 @@
 const startScreen = document.getElementById("start-screen");
 const gameScreen = document.getElementById("game-screen");
 const gameoverScreen = document.getElementById("gameover-screen");
+const screen = document.getElementById("game");
 
 const finalScoreText = document.getElementById("final-score");
 const highScoreText = document.getElementById("high-score");
@@ -11,18 +12,32 @@ var obstacleContainer = document.getElementById("obstacle-container")
 var hole = document.getElementById("hole");
 var character = document.getElementById("character");
 var textDisplay = document.getElementById("textDisplay");
+var textDisplay2 = document.getElementById("textDisplay2");
 var jumping = 0;
 let isGameOver = false;
 let score = 0;
+let speed = 2;
+let gravity = 4;
 let highScore = localStorage.getItem("cursedFlappyHighScore") || 0;
 let currentActiveScreen = "start";
 
 obstacleContainer.addEventListener('animationiteration', () => {
     if (!isGameOver) {
+        // set hole in random position
         var random = -(Math.random()*350);
         hole.style.top = random + "px";
+
+        // score stuff
         score ++;
         textDisplay.innerHTML = "Score: " + score;
+
+        // increase speed
+        speed = Math.max(0.6, 2 - (score * 0.05));
+        obstacleContainer.style.animationDuration = speed + "s";
+        textDisplay2.innerHTML = "Speed: " + speed;
+
+        // increase gravity slightly
+        gravity = Math.min(gravity + 0.07);
     }
 });
 
@@ -52,8 +67,18 @@ function changeScreen(screenName) {
     }
 }
 
+function triggerShake() {
+    screen.classList.add("shake-active");
+
+    setTimeout(() => {
+        screen.classList.remove("shake-active");
+    }, 300);
+}
+
 function resetGameValues() { 
     score = 0;
+    speed = 2;
+    gravity = 4;
     isGameOver = false;
     hole.style.top = "150px";
     obstacleContainer.style.animation = 'none';
@@ -69,7 +94,7 @@ setInterval(function(){
 
         if (jumping === 0) {
             if (holeTop < 350) {
-                hole.style.top = (holeTop+3)+"px";
+                hole.style.top = (holeTop+gravity)+"px";
             }
         }
 
@@ -79,6 +104,7 @@ setInterval(function(){
         var isCharacterBelowHole = characterTop + 30 > holeTop + 150;
         
         if((characterTop>470) || (characterTop < 0) || (isHorizontallyOverlapping && (isCharacterAboveHole || isCharacterBelowHole))) {
+            triggerShake();
             isGameOver = true;
             changeScreen("gameover");
         }
